@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kenya Prison Smart Farm</title>
+<style>
+/* Palette: Kenya flag colours. Put the official Kenya Prisons Service hex codes here if you have them. */
+:root{--black:#0a0a0a;--panel:#141a16;--green:#008C51;--red:#922529;--ink:#f7f7f2;--mute:#a9b8ad;--line:#2c3d33;--leaf:#4fae4f}
+*{box-sizing:border-box;margin:0}
+body{background:var(--black);color:var(--ink);font:16px/1.55 "Trebuchet MS",system-ui,sans-serif;min-height:100vh;padding-top:env(safe-area-inset-top,0px)}
+.stripe{height:9px;background:linear-gradient(90deg,#000 0 30%,#fff 30% 33%,var(--red) 33% 63%,#fff 63% 66%,var(--green) 66%)}
+nav{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;padding:14px 5vw;background:rgba(10,10,10,.92);position:sticky;top:0;z-index:5;border-bottom:1px solid var(--line)}
+nav b{font-family:Georgia,serif;font-size:1.15rem;color:var(--green)}
+.links a{color:var(--ink);text-decoration:none;padding:8px 16px;border-radius:99px;margin-right:6px;border:1px solid transparent}
+.links a.act{background:var(--green);color:var(--black);font-weight:700}
+.links a:not(.act):hover{border-color:var(--green)}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--red);margin-right:8px}
+.dot.on{background:var(--leaf);animation:ping 1.6s infinite}
+@keyframes ping{0%{box-shadow:0 0 0 0 rgba(79,174,79,.7)}100%{box-shadow:0 0 0 12px rgba(79,174,79,0)}}
+.page{display:none;padding:0 5vw 60px}.page.show{display:block}
+.hero{padding:48px 0 24px}
+h1{font-family:Georgia,serif;font-size:clamp(2.4rem,7vw,5.2rem);line-height:1;letter-spacing:-.02em}
+h1 span{color:var(--green)}
+.sub{color:var(--mute);margin-top:14px;max-width:560px}
+h2{font-family:Georgia,serif;font-weight:400;font-size:1.8rem;margin:36px 0 6px}
+.scene{margin-top:14px;border:1px solid var(--line);border-radius:14px;background:#0e1410;padding:14px}
+svg{width:100%;height:auto;display:block}
+svg text{fill:var(--ink);font:12px "Trebuchet MS",sans-serif;letter-spacing:.05em}
+.frame{fill:none;stroke:var(--mute);stroke-width:2}
+.pipe{fill:none;stroke:#2a3a30;stroke-width:9}
+.flow{fill:none;stroke-width:4;stroke-dasharray:7 12;opacity:0;transition:opacity .5s}
+.flow.on{opacity:1;animation:dash .7s linear infinite}
+@keyframes dash{to{stroke-dashoffset:-19}}
+.pg circle{fill:var(--black);stroke:var(--mute);stroke-width:2;transition:.4s}
+.pg.on circle{stroke:var(--green)}
+.fan{stroke:var(--ink);stroke-width:2;transform-box:fill-box;transform-origin:center}
+.pg.on .fan{animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin-top:22px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px;border-top:4px solid var(--green)}
+.card:nth-child(even){border-top-color:var(--red)}
+.card h3{font-weight:400;color:var(--mute);font-size:.9rem;margin-bottom:12px}
+.big{font-family:Georgia,serif;font-size:1.9rem;line-height:1.15;margin-bottom:14px;min-height:2.2rem}
+.small{color:var(--mute);font-size:.85rem}
+button{font:inherit;background:transparent;color:var(--ink);border:1.5px solid var(--green);border-radius:99px;padding:10px 20px;cursor:pointer;margin:0 8px 8px 0;transition:.2s}
+button:hover:not(:disabled){background:var(--green);color:var(--black)}
+button.on{background:var(--green);color:var(--black);font-weight:700}
+button.danger{border-color:var(--red)}button.danger:hover{background:var(--red)!important;color:#fff!important}
+button:disabled{opacity:.35;cursor:not-allowed}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(--green);outline-offset:2px}
+.cam{margin-top:18px;background:#000;border:1px solid var(--line);border-radius:14px;overflow:hidden;position:relative;aspect-ratio:4/3;max-width:900px;display:flex;align-items:center;justify-content:center}
+.cam img{width:100%;height:100%;object-fit:contain;display:none}
+.cam .msg{color:var(--mute);text-align:center;padding:20px}
+.live{position:absolute;top:12px;left:12px;background:var(--red);color:#fff;font-size:.75rem;font-weight:700;padding:4px 10px;border-radius:99px;display:none}
+.bar{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;max-width:900px}
+input{flex:1;min-width:220px;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:99px;padding:10px 18px;font:inherit}
+.toast{position:fixed;bottom:24px;left:50%;transform:translate(-50%,120px);background:var(--red);color:#fff;padding:12px 22px;border-radius:99px;transition:.4s;z-index:9}
+.toast.show{transform:translate(-50%,0)}
+footer{padding:26px 5vw;border-top:1px solid var(--line);color:var(--mute);font-size:.8rem;padding-bottom:calc(26px + env(safe-area-inset-bottom,0px))}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.pill{display:inline-flex;align-items:center;padding:6px 14px;border-radius:99px;font-size:.8rem;font-weight:700;border:1.5px solid}
+.pill.ok{border-color:var(--leaf);color:var(--leaf)}.pill.bad{border-color:var(--red);color:#e0686c}
+.dev.ok{border-top-color:var(--leaf)!important}.dev.bad{border-top-color:var(--red)!important}
+</style>
+</head>
+<body>
+<div class="stripe"></div>
+<nav>
+  <b>Kenya Prison Smart Farm</b>
+  <div class="links"><a href="#farm" id="l-farm">Farm control</a><a href="#camera" id="l-camera">Rabbit camera</a><a href="#devices" id="l-devices">Devices</a></div>
+  <span class="small"><i class="dot" id="dot"></i><span id="conn">CONNECTING</span></span>
+</nav>
+
+<main class="page" id="pg-farm">
+  <div class="hero">
+    <h1>Kenya Prison<br><span>Smart Farm</span></h1>
+    <p class="sub">Fishpond water and rabbit urine are mixed in the tank, then pumped to the crops. Nothing is wasted.</p>
+  </div>
+  <div class="scene">
+  <svg viewBox="0 0 960 350" aria-label="Live farm schematic">
+    <defs>
+      <clipPath id="pc"><rect x="20" y="120" width="240" height="170" rx="6"/></clipPath>
+      <clipPath id="tc"><rect x="401" y="111" width="178" height="178"/></clipPath>
+    </defs>
+    <g id="clouds"></g>
+    <!-- fishpond -->
+    <rect x="20" y="120" width="240" height="170" rx="6" fill="#0d3559"/>
+    <g clip-path="url(#pc)"><path id="pw2" fill="#1a5f9e" opacity=".55"/><path id="pw" fill="#1d63a8" opacity=".8"/><g id="fish"></g><g id="bubs"></g><rect id="glow" x="20" y="120" width="240" height="170" fill="#ffe680" opacity="0" style="transition:opacity .8s"/></g>
+    <rect class="frame" x="20" y="120" width="240" height="170" rx="6"/><text x="20" y="315">FISHPOND</text>
+    <!-- rabbit unit -->
+    <rect x="410" y="8" width="160" height="64" rx="4" fill="#1a1712" stroke="#a9b8ad" stroke-width="2"/>
+    <path d="M410 8 L490 -6 L570 8" fill="none" stroke="#a9b8ad" stroke-width="2"/>
+    <g id="rabs"></g><rect x="410" y="66" width="160" height="6" fill="#5a3a22"/>
+    <text x="582" y="44">RABBIT UNIT</text>
+    <path class="pipe" d="M490 72 V111"/><path id="fu" class="flow" stroke="#e0b52a" d="M490 72 V111"/>
+    <!-- mixer tank -->
+    <rect x="400" y="110" width="180" height="180" fill="#0b1410"/>
+    <g clip-path="url(#tc)"><path id="tw" fill="#3c86c9" opacity=".92"/></g>
+    <rect class="frame" x="400" y="110" width="180" height="180"/><text x="410" y="315">MIXER TANK</text>
+    <path d="M566 145H580" stroke="#a9b8ad" stroke-width="3"/><circle id="sens" cx="560" cy="145" r="5" fill="#922529"/>
+    <!-- pipes + pumps -->
+    <path class="pipe" d="M260 250H400"/><path id="f1" class="flow" stroke="#6fb8ff" d="M260 250H400"/>
+    <g class="pg" id="pg1"><circle cx="330" cy="250" r="20"/><path class="fan" d="M330 238v24M318 250h24"/></g><text x="303" y="215">PUMP 1</text>
+    <path class="pipe" d="M580 250H680V130H930"/><path id="f2" class="flow" stroke="#8bbf4a" d="M580 250H680V130H930"/>
+    <g class="pg" id="pg2"><circle cx="630" cy="250" r="20"/><path class="fan" d="M630 238v24M618 250h24"/></g><text x="603" y="215">PUMP 2</text>
+    <!-- farm -->
+    <rect id="soil" x="700" y="290" width="240" height="22" fill="#4b2f1c" style="transition:fill 2s"/>
+    <g id="noz"></g><g id="drops"></g><g id="plants"></g>
+    <text x="700" y="335">FARM CROPS</text>
+  </svg>
+  </div>
+
+  <h2>Control room</h2>
+  <p class="small">Commands need the dashboard PIN. Manual pump buttons unlock when Auto is off.</p>
+  <div class="grid">
+    <div class="card"><h3>System state</h3><div class="big" id="state">--</div><div class="small" id="timer"></div>
+      <div style="margin-top:14px"><button id="auto">Auto</button><button id="reset" class="danger" style="display:none">Reset fault</button></div></div>
+    <div class="card"><h3>Tank sensor</h3><div class="big" id="water">--</div><div class="small">Pump 2 waters the farm for 60 s when water is sensed</div></div>
+    <div class="card"><h3>Manual pumps</h3><div class="big" id="pumps">--</div><button id="m1">Pump 1</button><button id="m2">Pump 2</button></div>
+    <div class="card"><h3>Fish light</h3><div class="big" id="light">--</div><button id="lt">Toggle light</button></div>
+  </div>
+</main>
+
+<main class="page" id="pg-camera">
+  <div class="hero">
+    <h1>Rabbit unit<br><span>live camera</span></h1>
+    <p class="sub">Watch the rabbit unit in real time. The stream stops when you leave this page.</p>
+  </div>
+  <div class="cam">
+    <span class="live" id="live">LIVE</span>
+    <img id="cam" alt="Live view of the rabbit unit">
+    <div class="msg" id="camMsg">Press Watch to start the remote camera.</div>
+  </div>
+  <div class="bar">
+    <button id="camGo">Watch</button><button id="camStop" class="danger">Stop</button><button id="fl">Camera light</button><button id="camFs">Full screen</button>
+  </div>
+  <p class="small" style="margin-top:12px;max-width:900px">The camera sends its picture to the server, so you can watch from anywhere. It only sends while someone is watching.</p>
+</main>
+
+<main class="page" id="pg-devices">
+  <div class="hero"><h1>Device<br><span>manager</span></h1><p class="sub" id="devSum">--</p></div>
+  <div class="grid" id="devs"></div>
+  <p class="small" style="margin-top:16px">Green means the device is connected to the server right now. Red means it is not connected.</p>
+</main>
+
+<footer>Kenya Prison Smart Farm. Data stream: ESP32 to server to this page, updated every second.</footer>
+<div class="toast" id="toast"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+let ws,S=null,pin=sessionStorage.getItem('pin')||'';
+
+/* ---------- pages ---------- */
+function route(){
+  const p=location.hash==='#camera'?'camera':location.hash==='#devices'?'devices':'farm';
+  ['farm','camera','devices'].forEach(n=>{$('pg-'+n).classList.toggle('show',n===p);$('l-'+n).classList.toggle('act',n===p)});
+  if(p!=='camera'&&watching)watch(false);
+  scrollTo(0,0);
+}
+addEventListener('hashchange',route);
+
+/* ---------- remote camera ---------- */
+let watching=false,prevUrl=null;
+function camMsg(t){$('cam').style.display='none';$('live').style.display='none';$('camMsg').style.display='block';$('camMsg').textContent=t}
+function watch(on){watching=on;if(on)camMsg('Waiting for the first frame...');else{$('cam').removeAttribute('src');camMsg('Camera stopped. Press Watch to view again.')}cmd('watch:'+(on?1:0))}
+function showFrame(b){const im=$('cam'),u=URL.createObjectURL(new Blob([b],{type:'image/jpeg'}));im.onload=()=>{if(prevUrl)URL.revokeObjectURL(prevUrl);prevUrl=u;im.style.display='block';$('camMsg').style.display='none';$('live').style.display='block'};im.src=u}
+$('camGo').onclick=()=>watch(true);$('camStop').onclick=()=>watch(false);
+$('fl').onclick=()=>{const c=DEV.find(d=>d.id==='cam');cmd('flash:'+(c&&c.info&&c.info.flash?0:1))};
+$('camFs').onclick=()=>{const c=document.querySelector('.cam');c.requestFullscreen&&c.requestFullscreen()};
+
+/* ---------- device manager ---------- */
+let DEV=[];
+const upt=s=>{s=+s||0;const d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60);return (d?d+'d ':'')+(h?h+'h ':'')+m+'m'};
+const sig=r=>r==null?'--':r+' dBm ('+(r>-60?'strong':r>-75?'good':r>-85?'weak':'very weak')+')';
+function renderDevices(){
+  const link=ws&&ws.readyState===1;
+  const all=[{name:'Website server link',online:link,sub:'This page to the cloud server',ago:0,info:{}}].concat(DEV.map(d=>({...d,sub:d.id==='main'?'Runs the pumps, light and water sensor':'Watches the rabbit unit'})));
+  $('devSum').textContent=all.filter(d=>d.online).length+' of '+all.length+' devices online';
+  $('devs').innerHTML=all.map(d=>'<div class="card dev '+(d.online?'ok':'bad')+'"><h3>'+d.sub+'</h3><div class="big">'+d.name+'</div><span class="pill '+(d.online?'ok':'bad')+'"><i class="dot '+(d.online?'on':'')+'"></i>'+(d.online?'CONNECTED':'NOT CONNECTED')+'</span><div class="small" style="margin-top:12px">'+(d.online?'Signal: '+sig(d.info.rssi)+'<br>Uptime: '+(d.info.up==null?'--':upt(d.info.up)):'Last seen: '+(d.ago==null?'never':(d.ago<60?d.ago+' s':upt(d.ago))+' ago'))+'</div></div>').join('');
+  const m=DEV.find(d=>d.id==='main'),c=DEV.find(d=>d.id==='cam');
+  $('dot').className='dot'+(m&&m.online?' on':'');$('conn').textContent=link?(m&&m.online?'CONTROLLER ONLINE':'CONTROLLER OFFLINE'):'RECONNECTING';
+  const f=c&&c.info&&c.info.flash;$('fl').className=f?'on':'';$('fl').textContent='Camera light: '+(f?'on':'off');
+  if(watching&&c&&!c.online)camMsg('The camera is offline.');
+}
+
+/* ---------- live connection ---------- */
+function toast(m){const e=$('toast');e.textContent=m;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),2600)}
+function connect(){
+  ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host+'/ws');
+  ws.onopen=()=>{if(watching)cmd('watch:1');renderDevices()};
+  ws.onmessage=e=>{
+    if(typeof e.data!=='string'){if(watching)showFrame(e.data);return}
+    const m=JSON.parse(e.data);
+    if(m.error){if(m.error==='Wrong PIN'){pin='';sessionStorage.removeItem('pin')}return toast(m.error)}
+    if(m.type==='devices'){DEV=m.list;renderDevices()}
+    if(m.type==='status'){S=m.s;render()}};
+  ws.onclose=()=>{DEV=[];renderDevices();setTimeout(connect,2000)};
+}
+function cmd(c){
+  if(!pin){pin=prompt('Dashboard PIN')||'';sessionStorage.setItem('pin',pin)}
+  ws.readyState===1&&ws.send(JSON.stringify({pin,cmd:c}));
+}
+
+/* ---------- panel text and buttons ---------- */
+function render(){
+  $('state').textContent=S.state;
+  $('timer').textContent=S.auto&&S.pump2?S.remaining+' s of watering left':'';
+  $('water').textContent=S.water?'Water sensed':'No water';
+  $('pumps').textContent='P1 '+(S.pump1?'on':'off')+' / P2 '+(S.pump2?'on':'off');
+  $('light').textContent=S.light?'On':'Off';
+  $('auto').className=S.auto?'on':'';$('auto').textContent='Auto '+(S.auto?'on':'off');
+  $('reset').style.display=S.fault?'inline-block':'none';
+  $('m1').disabled=$('m2').disabled=S.auto;$('m1').className=S.pump1?'on':'';$('m2').className=S.pump2?'on':'';
+  $('lt').className=S.light?'on':'';
+  $('pg1').classList.toggle('on',!!S.pump1);$('pg2').classList.toggle('on',!!S.pump2);
+  ['f1','fu'].forEach(i=>$(i).classList.toggle('on',!!S.pump1));$('f2').classList.toggle('on',!!S.pump2);
+  $('glow').setAttribute('opacity',S.light?.28:0);
+}
+$('auto').onclick=()=>cmd('auto:'+(S&&S.auto?0:1));
+$('reset').onclick=()=>cmd('reset');
+$('m1').onclick=()=>cmd('p1:'+(S.pump1?0:1));$('m2').onclick=()=>cmd('p2:'+(S.pump2?0:1));
+$('lt').onclick=()=>cmd('light:'+(S&&S.light?0:1));
+
+/* ---------- living scene ---------- */
+const NS='http://www.w3.org/2000/svg';
+function mk(tag,a,par){const e=document.createElementNS(NS,tag);for(const k in a)e.setAttribute(k,a[k]);if(par)par.appendChild(e);return e}
+const R=(a,b)=>a+Math.random()*(b-a);
+const wave=(x0,x1,y,t,A,k,sp)=>{let d='M'+x0+' 400 L'+x0+' '+y;for(let x=x0;x<=x1;x+=8)d+=' L'+x+' '+(y+Math.sin(x*k+t*sp)*A+Math.sin(x*k*2.3-t*sp*.7)*A*.4);return d+' L'+x1+' 400Z'};
+
+// fish: three species-like colours, smooth turns, tail beat, gentle depth drift
+const fish=[['#f0b323',1],['#e8642c',1.2],['#dfe8f5',.9],['#f0b323',.8],['#e8642c',1]].map((c,i)=>{
+  const g=mk('g',{},$('fish')),b=mk('path',{d:'M-16 0Q-2-11 12 0Q-2 11-16 0Z',fill:c[0]},g),
+        t=mk('path',{d:'M11 0L25-8Q22 0 25 8Z',fill:c[0]},g),e=mk('circle',{cx:-9,cy:-2,r:1.8,fill:'#0a1f3d'},g);
+  return{g,t,c:c[1],x:R(50,230),y:150+i*26,dir:i%2?1:-1,sx:1,sp:R(.25,.6),ph:R(0,6)}});
+// bubbles from aerator
+const bubs=[...Array(9)].map(()=>({e:mk('circle',{r:R(2,4),fill:'none',stroke:'#8fc3ff'},$('bubs')),x:R(60,220),y:R(150,290),s:R(.3,.8),ph:R(0,6)}));
+// rabbits: hop now and then, ears twitch
+const rabs=[[450,1],[500,-1],[545,1]].map((p,i)=>{
+  const o=mk('g',{},$('rabs')),g=mk('g',{},o),ears=mk('g',{},g);
+  mk('ellipse',{cx:0,cy:-11,rx:15,ry:9,fill:'#e9e3d5'},g);mk('circle',{cx:-15,cy:-11,r:4,fill:'#fff'},g);mk('circle',{cx:12,cy:-19,r:7,fill:'#e9e3d5'},g);
+  mk('ellipse',{cx:9,cy:-32,rx:2.6,ry:9,fill:'#d9d1bf'},ears);mk('ellipse',{cx:15,cy:-31,rx:2.6,ry:9,fill:'#e9e3d5'},ears);mk('circle',{cx:14,cy:-20,r:1.3,fill:'#222'},g);
+  return{o,g,ears,x:p[0],d:p[1],ph:i*2.3,hx:0}});
+// clouds
+const clouds=[[0,40,1],[420,22,.7]].map(c=>{const g=mk('g',{fill:'#1c2721'});[[0,0,34,11],[22,-7,24,10],[-20,-3,22,9]].forEach(e=>mk('ellipse',{cx:e[0],cy:e[1],rx:e[2],ry:e[3]},g));$('clouds').appendChild(g);return{g,x:c[0],y:c[1],s:c[2]}});
+// irrigation nozzles + drops
+const NZ=[775,835,895];NZ.forEach(x=>mk('circle',{cx:x,cy:130,r:4,fill:'#ece7dc'},$('noz')));
+const drops=[...Array(30)].map((_,i)=>({e:mk('circle',{r:2.2,fill:'#6fb8ff',display:'none'},$('drops')),nx:NZ[i%3],life:0,x:0,y:0,vx:0,vy:0}));
+// crops: sway in wind, grow while watered
+const plants=[745,805,865,925].map((x,i)=>{
+  const o=mk('g',{transform:'translate('+x+' 290)'},$('plants')),g=mk('g',{},o);
+  mk('path',{d:'M0 0V-95',stroke:'#3d8a3d','stroke-width':4},g);
+  [[-14,-38,-25],[14,-58,25],[-13,-78,-25]].forEach(l=>mk('ellipse',{cx:l[0],cy:l[1],rx:14,ry:6,fill:'#4fae4f',transform:'rotate('+l[2]+' '+l[0]+' '+l[1]+')'},g));
+  return{g,fr:mk('circle',{cx:0,cy:-98,r:7,fill:i%2?'#f0b323':'#b8232f',opacity:0},g),ph:i*1.3}});
+
+let lvl=6,mix=0,grow=0,wet=0,last=0;
+const mixc=m=>{const a=[60,134,201],b=[138,122,46];return 'rgb('+a.map((v,i)=>Math.round(v+(b[i]-v)*m)).join()+')'};
+function loop(t){
+  const dt=Math.min(50,t-last)/16.7;last=t;const s=S||{};
+  // pond surface
+  $('pw').setAttribute('d',wave(20,260,126,t,2.5,.06,.0022));$('pw2').setAttribute('d',wave(20,260,131,t,2.2,.045,-.0016));
+  // fish
+  fish.forEach(f=>{
+    f.x+=f.dir*f.sp*dt;if(f.x>240){f.dir=-1}if(f.x<44){f.dir=1}
+    f.sx+=(f.dir*-1-f.sx)*.06*dt;                           // smooth turn (sprite faces left when dir=1 flips)
+    const y=f.y+Math.sin(t*.0011*f.sp*2+f.ph)*8;
+    f.g.setAttribute('transform','translate('+f.x+' '+y+') scale('+(f.sx*f.c)+' '+f.c+')');
+    f.t.setAttribute('transform','rotate('+Math.sin(t*.012*(1+f.sp)+f.ph)*22+' 11 0)')});
+  bubs.forEach(b=>{b.y-=b.s*dt;if(b.y<130){b.y=290;b.x=R(60,220)}b.e.setAttribute('cx',b.x+Math.sin(t*.003+b.ph)*3);b.e.setAttribute('cy',b.y);b.e.setAttribute('opacity',Math.min(1,(b.y-130)/60))});
+  // rabbits
+  rabs.forEach(r=>{
+    const c=(t/1000+r.ph)%7,hop=c<.7;
+    const y=hop?-Math.abs(Math.sin(c/.7*Math.PI))*13:0;
+    if(hop)r.hx+=r.d*.5*dt;if(Math.abs(r.hx)>18)r.d*=-1;
+    r.o.setAttribute('transform','translate('+(r.x+r.hx)+' 66)');
+    r.g.setAttribute('transform','translate(0 '+y+') scale('+(r.d)+' 1)');
+    r.ears.setAttribute('transform','rotate('+(Math.sin(t*.02+r.ph)>.96?-14:Math.sin(t*.002+r.ph)*3)+' 12 -25)')});
+  clouds.forEach(c=>{c.x+=.06*c.s*dt;if(c.x>1040)c.x=-80;c.g.setAttribute('transform','translate('+c.x+' '+c.y+')')});
+  // tank: rises while pump 1 runs, drops while pump 2 runs, locked to the sensor
+  if(s.pump1){lvl+=.28*dt;mix=Math.min(1,mix+.0009*dt)}
+  if(s.pump2)lvl-=.24*dt;
+  if(s.water&&lvl<142)lvl+=.6*dt;if(!s.water&&lvl>140&&!s.pump2)lvl-=.3*dt;
+  lvl=Math.max(6,Math.min(170,lvl));if(lvl<20)mix=Math.max(0,mix-.0006*dt);
+  $('tw').setAttribute('d',wave(401,579,289-lvl,t,2.4,.07,.003));$('tw').setAttribute('fill',mixc(mix));
+  $('sens').setAttribute('fill',s.water?'#4fae4f':'#922529');
+  // sprinkler drops
+  drops.forEach(d=>{
+    if(d.life<=0){if(s.pump2&&Math.random()<.35){d.life=1;d.x=d.nx;d.y=134;d.vx=R(-.9,.9);d.vy=R(.2,1.2);d.e.setAttribute('display','inline')}else{d.e.setAttribute('display','none');return}}
+    d.x+=d.vx*dt;d.y+=d.vy*dt;d.vy+=.09*dt;if(d.y>288)d.life=0;
+    d.e.setAttribute('cx',d.x);d.e.setAttribute('cy',d.y)});
+  // crops + soil
+  grow=Math.max(0,Math.min(1,grow+(s.pump2?.0006:-.00004)*dt));wet=Math.max(0,Math.min(1,wet+(s.pump2?.004:-.0007)*dt));
+  plants.forEach((p,i)=>{const g=Math.max(0,Math.min(1,grow*1.2-i*.07)),sc=.25+.75*g;
+    p.g.setAttribute('transform','rotate('+(Math.sin(t*.0018+p.ph)*2.2+Math.sin(t*.005+p.ph)*.6)+') scale('+sc+')');p.fr.setAttribute('opacity',g>.9?1:0)});
+  $('soil').setAttribute('fill',wet>.5?'#2c1b10':'#4b2f1c');
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+route();connect();
+</script>
+</body>
+</html>
