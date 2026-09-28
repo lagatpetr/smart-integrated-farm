@@ -4,7 +4,7 @@ const http = require('http'), fs = require('fs'), path = require('path');
 const { WebSocketServer } = require('ws');
 
 const PORT = process.env.PORT || 3000;
-const KEY  = process.env.DEVICE_KEY || 'change-this-device-key';
+const KEY  = process.env.DEVICE_KEY || 'd8f9146f1fb48739a00eeb0d986affa0206d866a63691b54';
 const PIN  = process.env.DASH_PIN || '1234';
 const NAMES = { main: 'Main controller (ESP32)', cam: 'Rabbit camera (ESP32-CAM)' };
 const dev = { main: { ws: null, seen: 0, info: {} }, cam: { ws: null, seen: 0, info: {} } };
